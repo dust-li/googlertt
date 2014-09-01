@@ -9,6 +9,7 @@ import logging
 import time
 import traceback
 import sys, getopt
+import platform
 
 '''
 @Author: Dusk Lee
@@ -20,6 +21,17 @@ google IPs from https://github.com/justjavac/Google-IPs
 https://github.com/justjavac/Google-IPs/blob/master/README.md
 '''
 
+# handle different os type
+SYSTEM_TYPE = ""
+os_type = platform.uname()[0]
+if os_type == "Darwin":
+	SYSTEM_TYPE = "OSX"
+elif os_type == "Linux":
+	SYSTEM_TYPE = "Linux"
+else:
+	os_type = "Linux"
+
+# files
 address_file = "GoogleIP.txt"
 good_addrs_file = "good.txt"
 log_file = "main.log"
@@ -108,14 +120,26 @@ def ping_IP(ip):
 	logger.debug("ping %s success" %ip)
 
 	s = output
-	loss_rate = re.findall(r"packets received, (.+?)% packet loss", s)
+
+	loss_rate = re.findall(r"received, (.+)% packet loss", s)
 	if(len(loss_rate) == 0):
 		logger.warn("loss_rate not found")
 		return None
-	if(loss_rate[0] == '100.0'):
+	if(float(loss_rate[0]) == 100.0):
+		logger.info("PING %s request timeout" %ip)
 		return None
 
-	min_rtt = re.findall(r"min/avg/max/stddev = (.+?)/",s)
+	min_rtt = ""
+	if SYSTEM_TYPE == "OSX":
+		min_rtt = re.findall(r"min/avg/max/stddev = (.+?)/",s)
+	elif SYSTEM_TYPE == "Linux":
+		min_rtt = re.findall(r"min/avg/max/mdev = (.+?)/",s)
+	else:
+		min_rtt = re.findall(r"min/avg/max/mdev = (.+?)/",s)
+	if len(min_rtt) == 0:
+		logger.warn("min_rtt not found")
+		return None
+
 	avg_rtt = re.findall((min_rtt[0]+"/(.+?)/"),s)
 	max_rtt = re.findall((avg_rtt[0]+"/(.+?)/"),s)
 
@@ -130,7 +154,6 @@ def ping_IP(ip):
 	except:
 		logger.exception("error parse: %s %s %s %s" %(avg_rtt[0],min_rtt[0],max_rtt[0],loss_rate[0]))
 		return None
-
 
 
 def do_job(i,q):
@@ -234,6 +257,7 @@ def main(argv):
 		else:
 			assert False, "unhandled option"
 
+	logger.info("OS type: %s" %SYSTEM_TYPE)
 	logger.info("pingcout: %s" %ping_cout)
 	logger.info("threadnumber: %s" %thread_num)
 	logger.info("mode: %s" %("fast" if is_fast_mode else "all"))
@@ -258,7 +282,6 @@ def main(argv):
 	# we need just try one address in a network segment
 	for ip in ip_addresses:
 		queue.put(ip)
-
 
 	for i in range(thread_num):
 		run=threading.Thread(target=do_job,args=(i,queue))

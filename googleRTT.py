@@ -186,7 +186,8 @@ def get_result_string(result):
 			for j in range(0,len(i)):
 				str_res += (str(i[j]) + "  ")
 			str_res += "\n"
-	return str_res
+		return str_res
+	return None
 
 
 
@@ -267,7 +268,8 @@ def main(argv):
 
 	# write result to file
 	str_res = get_result_string(result)
-	file_good.write(str_res)
+	if str_res:
+		file_good.write(str_res)
 
 	# clean
 	file_ip.close()

@@ -52,3 +52,9 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+#program specific
+good.txt
+tempIP.txt
+test.py
+
+

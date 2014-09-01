@@ -214,7 +214,7 @@ def main(argv):
 			usage()
 			sys.exit()
 		elif opt in ("-p", "--pingcount"):
-			ping_cout  = arg
+			ping_cout  = int(arg)
 		elif opt in ("-m", "--mode"):
 			if arg == "fast" or arg == "f":
 				is_fast_mode = True
@@ -223,9 +223,9 @@ def main(argv):
 			else:
 				is_fast_mode = True
 		elif opt in ("-t", "--threadnumber"):
-			thread_num = arg
+			thread_num = int(arg)
 		elif opt in ("-n", "--addressnumber"):
-			addr_num_in_network = arg
+			addr_num_in_network = int(arg)
 		elif opt in ("-s", "sortby"):
 			sort_by = int(arg)
 		elif opt in ("-v", "--verbose"):
@@ -238,8 +238,6 @@ def main(argv):
 	logger.info("mode: %s" %("fast" if is_fast_mode else "all"))
 	logger.info("addressnumber: %s" %addr_num_in_network)
 	logger.info("sortby: %s" %sort_by)
-	sys.exit(0)
-
 
 	queue = Queue.Queue()
 
